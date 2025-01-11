@@ -7,7 +7,6 @@ import subprocess
 import sys
 import random
 
-job_id = None
 autosave_running = False
 last_save_time = 0.0
 last_prompt_time = 0.0
@@ -130,8 +129,14 @@ def check_autosave():
     else:
         incremental_save()
 
+def schedule_autosave():
+    if not autosave_running:
+        return
+    check_autosave()
+    cmds.evalDeferred(schedule_autosave, lowestPriority=True)
+
 def start_autosave_job():
-    global job_id, autosave_running, last_save_time, last_prompt_time, last_countdown_msg_time
+    global autosave_running, last_save_time, last_prompt_time, last_countdown_msg_time
     if autosave_running:
         display_message("Autosave+ is already running.")
         return
@@ -140,19 +145,16 @@ def start_autosave_job():
     last_save_time = now
     last_prompt_time = now
     last_countdown_msg_time = 0.0
-    job_id = cmds.scriptJob(event=["idle", check_autosave], protected=True)
     display_message("Autosave+ started.")
     _disable_start_button()
+    schedule_autosave()
 
 def stop_autosave_job():
-    global job_id, autosave_running
+    global autosave_running
     if not autosave_running:
         display_message("Autosave+ is not running.")
         return
     autosave_running = False
-    if job_id and cmds.scriptJob(exists=job_id):
-        cmds.scriptJob(kill=job_id, force=True)
-    job_id = None
     display_message("Autosave+ stopped.")
     _enable_start_button()
 
@@ -304,7 +306,7 @@ def save_preferences_callback(interval, save_next_to_scene, save_location,
     save_preferences(prefs)
 
 def show_incremental_save_ui():
-    global autosave_running, job_id
+    global autosave_running
     if cmds.window("incrementalSaveUI", exists=True):
         cmds.deleteUI("incrementalSaveUI")
     window = cmds.window("incrementalSaveUI", title="Autosave+", widthHeight=(350, 400))
@@ -365,3 +367,6 @@ def show_incremental_save_ui():
     if autosave_running:
         cmds.button(START_BUTTON_NAME, edit=True, enable=False)
         display_message("Autosave+ is already running.")
+
+if not autosave_running:
+    start_autosave_job()
