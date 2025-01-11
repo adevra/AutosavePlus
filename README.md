@@ -38,6 +38,10 @@ Autosave+ improves on these areas by:
 5. That’s it — your work will now be saved automatically at regular intervals.
 6. Change autosave+ folder depending on your active project and hit Save Preferences.
 
+## How to always run Autosave+ each time Maya initializes?
+1. Go to your userSetup.py file (usually in maya/scripts/userSetup.py), if you don't have this file, create one yourself
+2. Copy and paste [this code](https://github.com/adevra/AutosavePlus/blob/main/userSetup.py) into userSetup.py 
+
 
 ### Autosave+ was built with simplicity and practicality in mind. If you’ve ever been frustrated by Maya’s native autosave or lost work due to an overlooked dependency, this tool might be a small improvement to your workflow. 
 Contributions, feedback, and suggestions are always welcome!
