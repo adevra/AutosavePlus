@@ -94,9 +94,12 @@ def check_autosave():
     if not autosave_running:
         return
     preferences = load_preferences()
+    
+    # Skip autosave if playback is active and the option is enabled.
     if preferences.get("disable_in_playback", False):
         if cmds.play(q=True, state=True):
             return
+    
     interval_seconds = preferences["interval"] * 60
     now = time.time()
     time_since_last = now - last_save_time
@@ -107,10 +110,7 @@ def check_autosave():
                 display_countdown_message(f"Next Autosave in: {int(time_left)}s")
                 last_countdown_msg_time = now
         return
-    if (now - last_prompt_time) < 1.0:
-        return
-    last_prompt_time = now
-    last_save_time = now
+
     if preferences["prompt_before_save"]:
         if in_prompt:
             return
@@ -128,6 +128,9 @@ def check_autosave():
             incremental_save()
     else:
         incremental_save()
+    
+    last_save_time = time.time()
+    last_prompt_time = time.time()
 
 def schedule_autosave():
     if not autosave_running:
